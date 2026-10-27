@@ -1,0 +1,22 @@
+# dependencias
+/node_modules
+
+# Next
+/.next/
+/out/
+/build
+next-env.d.ts
+*.tsbuildinfo
+
+# cliente de Prisma (se genera al instalar)
+/src/generated/
+
+# entorno: nunca al repositorio
+.env
+.env.*
+!.env.example
+
+# varios
+.DS_Store
+*.log
+.vercel

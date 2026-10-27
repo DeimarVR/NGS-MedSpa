@@ -1,0 +1,1125 @@
+// NGS MedSpa DFW — esquema de datos
+// Base de datos: PostgreSQL (Railway). La URL va en prisma.config.ts.
+//
+// Convenciones:
+//  · El dinero se guarda en CENTAVOS DE DÓLAR, en enteros. Nunca Float: un
+//    Float acumula errores de redondeo y una suma de varias líneas termina
+//    descuadrando el total.
+//  · Las cantidades de producto (unidades de toxina, mL de relleno) sí son
+//    decimales: 0,5 mL existe y redondearlo falsearía la historia clínica.
+//  · Todo lo de fecha y hora se guarda en UTC y se muestra en la zona de la
+//    clínica (CLINIC_TIMEZONE, America/Chicago).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Idiomas
+// ---------------------------------------------------------------------------
+
+/// Los cinco idiomas del sitio y del panel. Se guarda en la ficha de la
+/// clienta para los documentos y avisos que reciba.
+enum Idioma {
+  ES
+  EN
+  FR
+  AR
+  JA
+}
+
+// ---------------------------------------------------------------------------
+// Usuarios internos (panel)
+// ---------------------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  PROFESIONAL
+  RECEPCION
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  fullName     String
+  role         Role      @default(PROFESIONAL)
+  active       Boolean   @default(true)
+  /// Idioma con el que entra al panel después de iniciar sesión.
+  locale       Idioma    @default(EN)
+  /// Credencial que va bajo la firma (RN, NP, PA-C…). Texto libre.
+  credentials  String?
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  /// Firma guardada (data URL PNG). Se propone al emitir un documento; se
+  /// COPIA en cada documento, no se referencia.
+  signature String? @db.Text
+
+  sessionsPerformed TreatmentSession[] @relation("SessionProfessional")
+  invoices          Invoice[]
+  records           ClinicalRecord[]
+  appliedEntries    ClinicalEntry[]    @relation("EntryAppliedBy")
+  photoRecords      PhotoRecord[]
+  facialRecords     FacialRecord[]
+  consentTemplates  ConsentTemplate[]
+  signedConsents    SignedConsent[]
+  payments          Payment[]
+  cashCloses        CashClose[]
+  stockMoves        StockMove[]
+  touchUpMarks      TouchUpMark[]
+
+  @@map("users")
+}
+
+// ---------------------------------------------------------------------------
+// Catálogo de tratamientos
+// ---------------------------------------------------------------------------
+
+/// Familia del tratamiento. Decide el icono, el consentimiento que se sugiere
+/// y cada cuánto se le recuerda el retoque a la clienta.
+enum ServiceCategory {
+  TOXINA
+  RELLENO
+  PERFILADO
+  PIEL
+  PLANES
+  SIGNATURE
+  VALORACION
+}
+
+model Service {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  /// Nombre en español. Los demás idiomas van en `translations`.
+  name        String
+  shortDesc   String          @default("")
+  description String          @default("")
+  category    ServiceCategory @default(PIEL)
+  /// Duración de la cita, en minutos. Define el bloque de la agenda.
+  durationMin Int             @default(60)
+  /// Precio de referencia en centavos. `null` = «consultar».
+  priceCents  Int?
+  /// El precio es «desde» (rellenos) o «por unidad» (toxina).
+  priceMode   String          @default("DESDE")
+  /// Cada cuántos días le toca volver. Toxina ~90, rellenos ~270,
+  /// boosters ~28. `null` = no se recuerda.
+  touchUpDays Int?
+  icon        String          @default("sparkles")
+  benefits    String[]        @default([])
+  /// { "en": { "name": "...", "shortDesc": "...", "description": "..." }, ... }
+  translations Json           @default("{}")
+  featured    Boolean         @default(false)
+  /// Se puede usar dentro de la clínica: citas, recibos, fichas.
+  active      Boolean         @default(true)
+  /// Sale en la reserva en línea. Separado de `active` a propósito.
+  published   Boolean         @default(true)
+  sortOrder   Int             @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  plans              TreatmentPlan[]
+  appointments       Appointment[]
+  photoRecords       PhotoRecord[]
+  clinicalRecords    ClinicalRecord[]    @relation("ClinicalRecordService")
+  clinicalNext       ClinicalRecord[]    @relation("ClinicalRecordNextService")
+  facialEntries      FacialEntry[]       @relation("FacialEntryService")
+  facialNextControls FacialEntry[]       @relation("FacialEntryNextControl")
+  consentTemplates   ConsentTemplate[]
+  touchUpMarks       TouchUpMark[]
+
+  @@index([active, sortOrder])
+  @@map("services")
+}
+
+// ---------------------------------------------------------------------------
+// Clientas
+// ---------------------------------------------------------------------------
+
+enum Gender {
+  FEMENINO
+  MASCULINO
+  OTRO
+  NO_DECLARA
+}
+
+/// Embarazo o lactancia. Pesa en la decisión de aplicar toxina o relleno.
+enum PregnancyStatus {
+  NO
+  EMBARAZO
+  LACTANCIA
+  NO_DECLARA
+}
+
+/// Cómo nos conoció. Sirve para saber qué canal trae clientas.
+enum ReferralSource {
+  INSTAGRAM
+  TIKTOK
+  FACEBOOK
+  GOOGLE
+  REFERIDA
+  PASABA_POR_AQUI
+  OTRO
+}
+
+model Patient {
+  id          String    @id @default(cuid())
+  fullName    String
+  email       String?
+  /// Teléfono de EE. UU. normalizado: 11 dígitos con el 1 delante, sin «+»
+  /// (ej: 12145550100). Ver `server/lib/phone.ts`.
+  phone       String
+  birthDate   DateTime?
+  gender      Gender          @default(NO_DECLARA)
+  address     String?
+  city        String?
+  /// Idioma en el que recibe documentos y avisos.
+  preferredLocale Idioma      @default(EN)
+  referralSource  ReferralSource?
+  referralNote    String?
+  /// Usuario de Instagram, sin la @.
+  instagram   String?
+
+  allergies   String?
+  medications String?
+  pregnancy   PregnancyStatus @default(NO_DECLARA)
+  /// Antecedentes y observaciones clínicas generales.
+  medicalNotes String?
+
+  /// Token del enlace de seguimiento: /seguimiento/<publicToken>, sin cuenta.
+  publicToken String    @unique
+  /// Autorización firmada para publicar fotos de antes/después.
+  photoConsent Boolean  @default(false)
+  active      Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoices       Invoice[]
+  records        ClinicalRecord[]
+  plans          TreatmentPlan[]
+  appointments   Appointment[]
+  photoRecords   PhotoRecord[]
+  stockMoves     StockMove[]
+  facialRecords  FacialRecord[]
+  signedConsents SignedConsent[]
+  touchUpMarks   TouchUpMark[]
+
+  @@index([fullName])
+  @@index([phone])
+  @@index([email])
+  @@map("patients")
+}
+
+// ---------------------------------------------------------------------------
+// Plan de tratamiento y sesiones (paquetes: «3 sesiones de micropunción»)
+// ---------------------------------------------------------------------------
+
+enum PlanStatus {
+  ACTIVO
+  PAUSADO
+  FINALIZADO
+  CANCELADO
+}
+
+model TreatmentPlan {
+  id            String     @id @default(cuid())
+  patientId     String
+  serviceId     String
+  title         String
+  /// Objetivo pactado con la clienta, visible en su enlace de seguimiento.
+  goal          String?
+  totalSessions Int        @default(1)
+  intervalDays  Int        @default(28)
+  startDate     DateTime   @default(now())
+  status        PlanStatus @default(ACTIVO)
+  notes         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient  Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  service  Service            @relation(fields: [serviceId], references: [id])
+  sessions TreatmentSession[]
+
+  @@index([patientId, status])
+  @@map("treatment_plans")
+}
+
+enum SessionStatus {
+  PROGRAMADA
+  COMPLETADA
+  REPROGRAMADA
+  CANCELADA
+  NO_ASISTIO
+}
+
+model TreatmentSession {
+  id            String        @id @default(cuid())
+  planId        String
+  sessionNumber Int
+  scheduledAt   DateTime
+  performedAt   DateTime?
+  status        SessionStatus @default(PROGRAMADA)
+
+  professionalId String?
+
+  /// Notas internas: NUNCA salen en el enlace de la clienta.
+  clinicalNotes  String?
+  /// Resumen para la clienta: sí sale en su enlace.
+  patientSummary String?
+  /// Cuidados en casa hasta la próxima sesión.
+  homeCare       String?
+  productsUsed   String[] @default([])
+  metrics        Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  plan         TreatmentPlan  @relation(fields: [planId], references: [id], onDelete: Cascade)
+  professional User?          @relation("SessionProfessional", fields: [professionalId], references: [id])
+  photos       SessionPhoto[]
+  appointment  Appointment?
+
+  @@unique([planId, sessionNumber])
+  @@index([scheduledAt])
+  @@map("treatment_sessions")
+}
+
+enum PhotoType {
+  ANTES
+  PROGRESO
+  DESPUES
+}
+
+model SessionPhoto {
+  id               String    @id @default(cuid())
+  sessionId        String
+  url              String
+  type             PhotoType @default(PROGRESO)
+  angle            String    @default("frontal")
+  caption          String?
+  visibleToPatient Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+
+  session TreatmentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, angle])
+  @@map("session_photos")
+}
+
+// ---------------------------------------------------------------------------
+// Agenda
+// ---------------------------------------------------------------------------
+
+enum AppointmentStatus {
+  PENDIENTE
+  CONFIRMADA
+  CANCELADA
+  COMPLETADA
+  NO_ASISTIO
+}
+
+enum AppointmentSource {
+  WEB
+  TELEFONO
+  PRESENCIAL
+  INSTAGRAM
+  WHATSAPP
+}
+
+model Appointment {
+  id        String  @id @default(cuid())
+  serviceId String
+  patientId String?
+
+  /// Datos de contacto tal como los dejó la persona. Se conservan aunque
+  /// después se cree o se enlace la ficha.
+  contactName  String
+  contactPhone String
+  contactEmail String?
+  message      String?
+  /// Idioma en el que reservó: el de los avisos que reciba.
+  locale       Idioma  @default(EN)
+
+  startsAt DateTime
+  endsAt   DateTime
+  status   AppointmentStatus @default(PENDIENTE)
+  source   AppointmentSource @default(WEB)
+
+  /// Token del enlace para que la persona confirme o cancele.
+  manageToken String @unique
+
+  /// Marcas para cuando se decida el canal de avisos (WhatsApp, SMS o correo).
+  confirmationSentAt DateTime?
+  reminderSentAt     DateTime?
+  /// Cuándo se canceló. No vale `updatedAt`: cualquier cambio posterior lo mueve.
+  cancelledAt        DateTime?
+
+  /// Sesión del plan a la que corresponde, si aplica.
+  sessionId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  service        Service           @relation(fields: [serviceId], references: [id])
+  patient        Patient?          @relation(fields: [patientId], references: [id])
+  session        TreatmentSession? @relation(fields: [sessionId], references: [id])
+  clinicalRecord ClinicalRecord?
+  facialEntry    FacialEntry?
+
+  @@index([startsAt, status])
+  @@index([patientId, startsAt])
+  @@map("appointments")
+}
+
+/// Horario de atención por día de la semana (0 = domingo … 6 = sábado).
+model BusinessHour {
+  id         String  @id @default(cuid())
+  dayOfWeek  Int     @unique
+  /// "10:00" en hora de la clínica.
+  openTime   String
+  closeTime  String
+  breakStart String?
+  breakEnd   String?
+  active     Boolean @default(true)
+
+  @@map("business_hours")
+}
+
+/// Días u horas bloqueadas (feriados, vacaciones, cursos).
+model Blackout {
+  id       String   @id @default(cuid())
+  startsAt DateTime
+  endsAt   DateTime
+  reason   String?
+
+  @@index([startsAt, endsAt])
+  @@map("blackouts")
+}
+
+// ---------------------------------------------------------------------------
+// Fotos clínicas (antes / después)
+// ---------------------------------------------------------------------------
+
+/// Registro fotográfico de una clienta. Es material CLÍNICO e interno.
+///
+/// `publishable` solo se puede encender si la clienta tiene firmado el
+/// consentimiento de uso de fotos (lo comprueba el servidor). Ni así se
+/// publica solo: la marca dice «se puede», no «se publicó».
+model PhotoRecord {
+  id        String  @id @default(cuid())
+  patientId String
+  serviceId String?
+
+  title String
+  notes String?
+
+  /// Autorización para SER FOTOGRAFIADA (no para publicar).
+  consentSigned Boolean @default(false)
+  /// Autorizada para redes, con consentimiento de fotos firmado.
+  publishable   Boolean @default(false)
+
+  createdById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  photos    PhotoRecordItem[]
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  service   Service? @relation(fields: [serviceId], references: [id])
+  createdBy User?    @relation(fields: [createdById], references: [id])
+
+  @@index([patientId, createdAt])
+  @@map("photo_records")
+}
+
+model PhotoRecordItem {
+  id       String @id @default(cuid())
+  recordId String
+
+  url     String
+  type    PhotoType @default(PROGRESO)
+  angle   String    @default("frontal")
+  caption String?
+  takenAt DateTime  @default(now())
+  sortOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  record PhotoRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@index([recordId, sortOrder])
+  @@map("photo_record_items")
+}
+
+// ---------------------------------------------------------------------------
+// Formulario de contacto de la landing
+// ---------------------------------------------------------------------------
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  subject   String?
+  message   String
+  locale    Idioma   @default(EN)
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([handled, createdAt])
+  @@map("contact_messages")
+}
+
+/// Ajustes editables desde el panel sin desplegar.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
+
+// ---------------------------------------------------------------------------
+// Recibos y cotizaciones
+// ---------------------------------------------------------------------------
+
+enum DocumentType {
+  RECIBO
+  COTIZACION
+}
+
+enum DocumentStatus {
+  BORRADOR
+  EMITIDA
+  PAGADA
+  ANULADA
+}
+
+/// Recibo o cotización, en USD (centavos).
+///
+/// Los impuestos están PENDIENTES de confirmar con la clínica: por eso la tasa
+/// va en cada documento (`taxRateBps`, en puntos básicos: 825 = 8,25 %) y el
+/// valor por defecto se ajusta desde Configuración. Hoy arranca en 0.
+model Invoice {
+  id     String         @id @default(cuid())
+  /// Consecutivo propio. Se asigna dentro de una transacción.
+  number Int            @unique
+  series String         @default("NGS")
+  type   DocumentType   @default(RECIBO)
+  status DocumentStatus @default(EMITIDA)
+
+  /// Día del documento (sin hora), a medianoche UTC.
+  issueDate DateTime
+
+  /// Datos de la clienta CONGELADOS al emitir.
+  patientId   String?
+  clientName  String
+  clientEmail String?
+  clientPhone String?
+  /// Idioma del PDF.
+  locale      Idioma  @default(EN)
+
+  items InvoiceItem[]
+
+  subtotal   Int
+  discount   Int @default(0)
+  taxRateBps Int @default(0)
+  tax        Int @default(0)
+  total      Int
+  /// Lo abonado y lo que falta, como en el talonario.
+  deposit    Int @default(0)
+  balance    Int
+
+  notes       String?
+  createdById String?
+
+  /// Firma de quien elabora, copiada al emitir.
+  signature String? @db.Text
+  signedBy  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient    Patient?    @relation(fields: [patientId], references: [id])
+  createdBy  User?       @relation(fields: [createdById], references: [id])
+  payments   Payment[]
+  stockMoves StockMove[]
+
+  @@index([issueDate])
+  @@index([patientId])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String @id @default(cuid())
+  invoiceId   String
+  quantity    Int    @default(1)
+  description String
+  /// Centavos.
+  unitPrice   Int
+  total       Int
+  sortOrder   Int    @default(0)
+
+  /// Producto del inventario, cuando la línea es una venta de producto.
+  /// Permite descontarlo al cobrar. `SetNull`: el recibo sobrevive al catálogo.
+  productId String?
+
+  invoice Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([invoiceId])
+  @@index([productId])
+  @@map("invoice_items")
+}
+
+/// Cómo entró el dinero. Lo que permite cuadrar la caja.
+enum PaymentMethod {
+  EFECTIVO
+  TARJETA
+  ZELLE
+  TRANSFERENCIA
+  FINANCIACION
+  OTRO
+}
+
+/// Un pago recibido contra un recibo. Cada movimiento tiene su fecha: de ahí
+/// sale el cierre de caja.
+model Payment {
+  id        String @id @default(cuid())
+  invoiceId String
+
+  /// Centavos.
+  amount Int
+  method PaymentMethod @default(TARJETA)
+  /// Cuándo entró el dinero (puede no ser cuándo se anotó).
+  paidAt DateTime
+
+  reference String?
+  notes     String?
+
+  /// Firma de la clienta al pagar (data URL PNG). Puede faltar.
+  patientSignature  String? @db.Text
+  /// Firma de quien recibió, COPIADA de su firma guardada.
+  receivedSignature String? @db.Text
+  receivedBy        String?
+
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation(fields: [createdById], references: [id])
+
+  @@index([paidAt])
+  @@index([invoiceId])
+  @@map("payments")
+}
+
+/// El cierre de un día, cuadrado y firmado. Los totales quedan CONGELADOS.
+model CashClose {
+  id String @id @default(cuid())
+
+  /// El día cerrado (medianoche UTC del día de la clínica). Uno por día.
+  closeDate DateTime @unique
+
+  expectedCash  Int
+  expectedOther Int
+  expectedTotal Int
+  countedCash   Int
+  difference    Int
+  invoiceCount  Int
+  invoicedTotal Int
+
+  notes String?
+
+  closedById String?
+  closedAt   DateTime @default(now())
+
+  closedBy User? @relation(fields: [closedById], references: [id])
+
+  @@index([closeDate])
+  @@map("cash_closes")
+}
+
+// ---------------------------------------------------------------------------
+// Ficha facial (piel)
+// ---------------------------------------------------------------------------
+
+/// Fototipo de Fitzpatrick.
+enum SkinType {
+  FITZ_I
+  FITZ_II
+  FITZ_III
+  FITZ_IV
+  FITZ_V
+  FITZ_VI
+}
+
+/// Ficha de piel: peelings, micropunción, boosters, faciales.
+/// Las inyecciones (toxina y rellenos) van en el mapa facial (ClinicalRecord).
+model FacialRecord {
+  id        String @id @default(cuid())
+  patientId String
+
+  openedAt DateTime
+
+  /// Datos de la clienta CONGELADOS al abrir.
+  patientName  String
+  patientAge   Int?
+  patientPhone String?
+
+  skinType      SkinType?
+  skinCondition String?
+  concerns      String[]
+  allergies     String?
+  contraindications String?
+  notes         String?
+
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  entries   FacialEntry[]
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation(fields: [createdById], references: [id])
+
+  @@index([patientId])
+  @@index([openedAt])
+  @@map("facial_records")
+}
+
+/// Una sesión dentro de la ficha de piel.
+model FacialEntry {
+  id       String @id @default(cuid())
+  recordId String
+
+  sessionDate  DateTime
+  sessionLabel String?
+  serviceId    String?
+  zones        String[]
+
+  /// Producto aplicado. Si viene de un lote del inventario, se descuenta.
+  productId   String?
+  productName String?
+  lotId       String?
+  lotNumber   String?
+  quantity     Float?
+  quantityUnit String?
+
+  technique String?
+  findings  String?
+  homeCare  String?
+
+  /// Próximo control: si se llena, se agenda solo y se MUEVE al editarlo.
+  nextControl              DateTime?
+  nextControlTime          String?
+  nextControlServiceId     String?
+  nextControlAppointmentId String?   @unique
+
+  professionalSignature String? @db.Text
+  patientSignature      String? @db.Text
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  record                 FacialRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  service                Service?     @relation("FacialEntryService", fields: [serviceId], references: [id])
+  nextControlService     Service?     @relation("FacialEntryNextControl", fields: [nextControlServiceId], references: [id])
+  nextControlAppointment Appointment? @relation(fields: [nextControlAppointmentId], references: [id])
+  product                Product?     @relation(fields: [productId], references: [id])
+  lot                    Lot?         @relation(fields: [lotId], references: [id])
+  stockMove              StockMove?
+
+  @@index([recordId])
+  @@map("facial_entries")
+}
+
+// ---------------------------------------------------------------------------
+// Consentimientos
+// ---------------------------------------------------------------------------
+
+/// Para qué es el consentimiento. Decide cuál se sugiere según el tratamiento.
+enum ConsentKind {
+  TOXINA
+  RELLENO
+  FOTOS
+  GENERAL
+}
+
+/// La plantilla: el texto que la clínica tiene redactado, en un idioma.
+model ConsentTemplate {
+  id          String      @id @default(cuid())
+  name        String
+  description String?
+  kind        ConsentKind @default(GENERAL)
+  /// Idioma del texto. Hay una plantilla por idioma.
+  locale      Idioma      @default(EN)
+
+  /// Texto plano. Párrafos separados por saltos de línea; una línea en
+  /// MAYÚSCULAS es un título y una que empieza por «-» es una viñeta.
+  body    String  @db.Text
+  /// Sube cada vez que se corrige el texto; se copia sobre cada firma.
+  version Int     @default(1)
+  active  Boolean @default(true)
+
+  services Service[]
+
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy  User?           @relation(fields: [createdById], references: [id])
+  signatures SignedConsent[]
+
+  @@index([active, name])
+  @@map("consent_templates")
+}
+
+/// Un consentimiento ya firmado. Documento CERRADO: guarda su propio PDF.
+model SignedConsent {
+  id         String  @id @default(cuid())
+  templateId String?
+  patientId  String
+
+  templateName    String
+  templateVersion Int         @default(1)
+  kind            ConsentKind @default(GENERAL)
+  locale          Idioma      @default(EN)
+  patientName     String
+
+  signedAt DateTime
+  /// PDF firmado. No se reemplaza nunca.
+  fileUrl  String
+  /// La firma tal cual se capturó (data URL PNG).
+  signature String @db.Text
+
+  professionalName String?
+  signedById       String?
+  notes            String?
+
+  createdAt DateTime @default(now())
+
+  template ConsentTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  patient  Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  signedBy User?            @relation(fields: [signedById], references: [id])
+
+  @@index([patientId, signedAt])
+  @@map("signed_consents")
+}
+
+// ---------------------------------------------------------------------------
+// Inventario por lote
+// ---------------------------------------------------------------------------
+
+/// Qué es el producto. Toxina y relleno se rigen por lote y vencimiento.
+enum ProductKind {
+  TOXINA
+  RELLENO
+  BIOESTIMULADOR
+  SKIN_BOOSTER
+  INSUMO
+  VENTA
+}
+
+/// Producto del catálogo.
+///
+/// NO guarda la existencia: se calcula sumando movimientos, para que no pueda
+/// desincronizarse.
+model Product {
+  id   String      @id @default(cuid())
+  name String
+  kind ProductKind @default(INSUMO)
+  brand String?
+  sku   String?    @unique
+
+  /// Unidad en la que se CUENTA la existencia: «u» (toxina), «jeringa»,
+  /// «unidad», «mL»…
+  unit String @default("unidad")
+  /// Cuántas unidades trae el empaque al recibirlo: vial de 100 u o de 300 u.
+  /// Solo ayuda a registrar entradas; la existencia va en `unit`.
+  packageSize  Float?
+  packageLabel String?
+  /// Unidad en la que se APLICA en el mapa facial («u» o «mL»).
+  applicationUnit String @default("u")
+  /// Cuántas unidades de aplicación trae una unidad de existencia.
+  /// Toxina: 1 (u = u). Relleno: mL por jeringa (1, 0,55…).
+  applicationPerUnit Float @default(1)
+
+  presentation String?
+  category     String?
+  /// Precio de venta en centavos (productos de venta).
+  salePrice Int?
+  supplier  String?
+  /// Mínimo en `unit`. Por debajo, aviso. 0 = sin aviso.
+  minStock  Float @default(0)
+  notes     String?
+  active    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lots          Lot[]
+  moves         StockMove[]
+  facialEntries FacialEntry[]
+  clinicalEntries ClinicalEntry[]
+  invoiceItems  InvoiceItem[]
+
+  @@index([active, name])
+  @@map("products")
+}
+
+/// Un lote recibido. La existencia del lote es la suma de sus movimientos.
+///
+/// Es lo que permite responder, si retiran un lote del mercado, a quién se le
+/// aplicó: cada aplicación guarda su `lotId`.
+model Lot {
+  id        String    @id @default(cuid())
+  productId String
+  lotNumber String
+  expiresAt DateTime?
+  receivedAt DateTime @default(now())
+  /// Costo por unidad de existencia, en centavos.
+  unitCost  Int?
+  notes     String?
+  /// Retirado del mercado o descartado: no se ofrece para aplicar.
+  blocked   Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product         Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  moves           StockMove[]
+  clinicalEntries ClinicalEntry[]
+  facialEntries   FacialEntry[]
+
+  @@unique([productId, lotNumber])
+  @@index([expiresAt])
+  @@map("lots")
+}
+
+enum StockMoveType {
+  ENTRADA
+  SALIDA
+  AJUSTE
+}
+
+enum StockMoveReason {
+  COMPRA
+  USO_EN_PACIENTE
+  /// Vendido y cobrado en un recibo. Solo lo pone el sistema.
+  VENTA
+  DEVOLUCION
+  VENCIMIENTO
+  DANO
+  CONTEO
+  /// Deshace un movimiento mal anotado. Solo lo pone el sistema.
+  CORRECCION
+  OTRO
+}
+
+/// Cada entrada, salida o ajuste. Única fuente de la existencia.
+model StockMove {
+  id        String @id @default(cuid())
+  productId String
+  lotId     String?
+
+  type   StockMoveType
+  reason StockMoveReason @default(OTRO)
+
+  /// SIEMPRE positiva; el sentido lo da `type`. En la unidad del producto.
+  quantity Float
+
+  occurredAt DateTime
+
+  /// A quién se le aplicó (salidas por uso en clienta).
+  patientId String?
+
+  /// Aplicación del mapa facial o de la ficha de piel que generó la salida.
+  /// Únicos: al editar la aplicación se ajusta su salida, nunca se duplica.
+  clinicalEntryId String? @unique
+  facialEntryId   String? @unique
+
+  /// Qué movimiento corrige, cuando es una corrección.
+  correctsId String? @unique
+
+  /// Recibo del que salió, cuando es una venta.
+  invoiceId String?
+
+  /// Costo unitario de la compra, en centavos. Solo entradas.
+  unitCost Int?
+  notes    String?
+
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  product       Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  lot           Lot?           @relation(fields: [lotId], references: [id], onDelete: SetNull)
+  patient       Patient?       @relation(fields: [patientId], references: [id])
+  createdBy     User?          @relation(fields: [createdById], references: [id])
+  invoice       Invoice?       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  clinicalEntry ClinicalEntry? @relation(fields: [clinicalEntryId], references: [id], onDelete: SetNull)
+  facialEntry   FacialEntry?   @relation(fields: [facialEntryId], references: [id], onDelete: SetNull)
+
+  corrects   StockMove? @relation("Correccion", fields: [correctsId], references: [id], onDelete: Restrict)
+  correction StockMove? @relation("Correccion")
+
+  @@index([productId, occurredAt])
+  @@index([lotId])
+  @@index([patientId])
+  @@index([occurredAt])
+  @@index([invoiceId])
+  @@map("stock_moves")
+}
+
+// ---------------------------------------------------------------------------
+// Mapa facial de aplicación (toxina y rellenos)
+// ---------------------------------------------------------------------------
+
+/// Plantilla sobre la que se marcan los puntos.
+enum FaceView {
+  FRENTE
+  PERFIL_IZQ
+  PERFIL_DER
+}
+
+/// Una visita de inyectables: la hoja con el rostro y sus puntos.
+///
+/// Reemplaza el control capilar de Dermocapilar (CareType y el diagrama de
+/// cabeza). Lo que une el mapa con la ficha de piel es la clienta.
+model ClinicalRecord {
+  id        String @id @default(cuid())
+  patientId String
+
+  procedureDate DateTime
+  /// Tratamiento principal de la visita: decide el retoque.
+  serviceId     String?
+
+  /// Datos de la clienta CONGELADOS al abrir.
+  patientName  String
+  patientAge   Int?
+  patientPhone String?
+
+  /// Foto propia del rostro (ruta interna /api/archivos/...). Sin foto se
+  /// usa la plantilla dibujada.
+  facePhotoUrl String?
+
+  /// Cita de la que viene, si vino de la agenda.
+  appointmentId String? @unique
+
+  notes       String?
+  aftercare   String?
+
+  /// Próximo control / retoque: si se llena, se agenda solo.
+  nextControl              DateTime?
+  nextControlTime          String?
+  nextControlServiceId     String?
+  nextControlAppointmentId String?   @unique
+
+  professionalSignature String? @db.Text
+  patientSignature      String? @db.Text
+
+  createdById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  entries                ClinicalEntry[]
+  patient                Patient      @relation(fields: [patientId], references: [id])
+  service                Service?     @relation("ClinicalRecordService", fields: [serviceId], references: [id])
+  nextControlService     Service?     @relation("ClinicalRecordNextService", fields: [nextControlServiceId], references: [id])
+  appointment            Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  createdBy              User?        @relation(fields: [createdById], references: [id])
+
+  @@index([patientId])
+  @@index([procedureDate])
+  @@map("clinical_records")
+}
+
+/// Un punto del mapa: dónde, qué, cuánto, de qué lote y quién lo aplicó.
+model ClinicalEntry {
+  id       String @id @default(cuid())
+  recordId String
+
+  view FaceView @default(FRENTE)
+  /// Posición en la plantilla, en porcentaje (0–100) del ancho y del alto.
+  x Float
+  y Float
+  /// Zona anatómica (frente, entrecejo, patas de gallo, labios…).
+  zone String
+
+  productId   String?
+  /// Nombre tal cual, por si el producto deja de existir en el catálogo.
+  productName String
+  lotId       String?
+  lotNumber   String?
+  expiresAt   DateTime?
+
+  /// Cuánto se aplicó en este punto, en `unit` («u» o «mL»).
+  quantity Float
+  unit     String @default("u")
+
+  /// Profundidad o técnica: intradérmica, subcutánea, supraperióstica, cánula…
+  technique String?
+  notes     String?
+
+  appliedById   String?
+  appliedByName String?
+
+  sortOrder Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  record    ClinicalRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  product   Product?       @relation(fields: [productId], references: [id])
+  lot       Lot?           @relation(fields: [lotId], references: [id])
+  appliedBy User?          @relation("EntryAppliedBy", fields: [appliedById], references: [id])
+  stockMove StockMove?
+
+  @@index([recordId])
+  @@index([lotId])
+  @@map("clinical_entries")
+}
+
+// ---------------------------------------------------------------------------
+// Retoques
+// ---------------------------------------------------------------------------
+
+enum TouchUpStatus {
+  CONTACTADA
+  DESCARTADA
+}
+
+/// Qué se hizo con un retoque pendiente.
+///
+/// Los retoques se CALCULAN (último tratamiento + `touchUpDays`); esta tabla
+/// solo guarda la respuesta del equipo para que no vuelva a salir el mismo.
+/// `baseDate` es la fecha del tratamiento al que se refiere: si la clienta se
+/// trata otra vez, el retoque nuevo es otro y vuelve a salir.
+model TouchUpMark {
+  id        String        @id @default(cuid())
+  patientId String
+  serviceId String
+  baseDate  DateTime
+  status    TouchUpStatus
+  notes     String?
+  byId      String?
+  createdAt DateTime      @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  by      User?   @relation(fields: [byId], references: [id], onDelete: SetNull)
+
+  @@unique([patientId, serviceId, baseDate])
+  @@map("touch_up_marks")
+}
