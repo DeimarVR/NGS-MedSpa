@@ -1,7 +1,7 @@
 # Contexto del proyecto · NGS MedSpa (panel + landing)
 
 Pega este archivo al inicio del chat nuevo, o conecta la carpeta `D:\Proyectos\NGS-MedSpa` y pide que lo lean.
-
+ 
 ## 1. Qué es
 
 - **Dueño del proyecto:** Solventra. Quien trabaja contigo es **Deimar**. Las respuestas van siempre **en español**.
