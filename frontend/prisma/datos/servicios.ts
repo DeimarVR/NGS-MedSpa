@@ -311,20 +311,4 @@ export const SERVICIOS: ServicioInicial[] = [
     ar: { name: 'باقة عيد الميلاد', shortDesc: 'احتفلي بخطة مصمّمة خصيصًا لكِ.' },
     ja: { name: 'バースデーパッケージ', shortDesc: 'あなたのためのプランでお祝いを。' },
   },
-  {
-    slug: 'bono-regalo',
-    category: 'PLANES',
-    durationMin: 30,
-    priceCents: null,
-    priceMode: 'FIJO',
-    touchUpDays: null,
-    icon: 'gift',
-    // Se vende en un recibo, no se reserva.
-    published: false,
-    es: { name: 'Bono de regalo', shortDesc: 'Regala un tratamiento.' },
-    en: { name: 'Gift card', shortDesc: 'Give the gift of a treatment.' },
-    fr: { name: 'Carte cadeau', shortDesc: 'Offrez un soin.' },
-    ar: { name: 'بطاقة هدية', shortDesc: 'أهدي جلسة علاج.' },
-    ja: { name: 'ギフトカード', shortDesc: '施術をプレゼントに。' },
-  },
 ];
