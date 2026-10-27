@@ -247,6 +247,8 @@
     "finDespues": "El final debe ser después del inicio",
     "telefono": "El teléfono no parece válido",
     "instagram": "Solo letras, números, puntos y guiones bajos",
+    "facebook": "Pega el enlace completo de Facebook (https://www.facebook.com/…)",
+    "tiktok": "Pega el enlace completo de TikTok (https://www.tiktok.com/@…)",
     "mapa": "Pega un enlace de Google Maps",
     "cupos": "Entre 1 y 10",
     "impuesto": "Escribe la tasa en puntos básicos (825 = 8,25 %)"
@@ -627,10 +629,6 @@
     "paginaDe": "{desde}–{hasta} de {total}"
   },
   "sitio": {
-    "demo": {
-      "titulo": "VISTA PREVIA",
-      "texto": "precios, imágenes y datos de contacto de ejemplo"
-    },
     "marca": {
       "lema": "Advanced Aesthetics"
     },
@@ -638,7 +636,6 @@
       "inicio": "Inicio",
       "tratamientos": "Tratamientos",
       "nosotros": "Nosotros",
-      "club": "Club VIP",
       "preguntas": "Preguntas",
       "contacto": "Contacto",
       "reservar": "Reservas online",
@@ -707,8 +704,7 @@
         "items": [
           "Plan novia",
           "Día de madre e hija",
-          "Paquetes de cumpleaños",
-          "Bonos de regalo"
+          "Paquetes de cumpleaños"
         ]
       },
       "signature": {
@@ -802,27 +798,6 @@
       "fotoPrueba": "Imagen de prueba",
       "fotoDetalle": "Foto del equipo o la clínica"
     },
-    "club": {
-      "pastilla": "Membresía exclusiva",
-      "titulo1": "Eleva tu experiencia",
-      "titulo2": "Club VIP",
-      "texto": "Más que una tarjeta: prioridad, ahorro y recordatorios de retoque para quienes hacen del cuidado personal un estilo de vida.",
-      "b1": {
-        "titulo": "Precios de miembro",
-        "texto": "Hasta 20% en tratamientos y productos."
-      },
-      "b2": {
-        "titulo": "Prioridad VIP",
-        "texto": "Agenda prioritaria y eventos exclusivos."
-      },
-      "b3": {
-        "titulo": "Aviso de retoques",
-        "texto": "Te avisamos cuando te toque de nuevo."
-      },
-      "tarjetaMiembro": "MIEMBRO",
-      "tarjetaNombre": "TU NOMBRE AQUÍ",
-      "tarjetaNivel": "NIVEL"
-    },
     "faq": {
       "kicker": "Resolvemos tus dudas",
       "titulo": "Preguntas Frecuentes",
@@ -883,16 +858,7 @@
       "consentimientos": "Consentimientos",
       "reservas": "Reservas",
       "derechos": "© NGS MedSpa · DFW",
-      "hecho": "Vista previa por Solventra",
       "panel": "Acceso del equipo"
-    },
-    "promo": {
-      "kicker": "Regalo de bienvenida",
-      "titulo": "15% en tu primera visita",
-      "texto": "Promoción de ejemplo para la vista previa.",
-      "boton": "La quiero",
-      "abrir": "Ver la promoción",
-      "subir": "Subir"
     },
     "dias": {
       "0": "Domingo",
@@ -902,7 +868,8 @@
       "4": "Jueves",
       "5": "Viernes",
       "6": "Sábado"
-    }
+    },
+    "subir": "Subir"
   },
   "panel": {
     "shell": {
@@ -1733,6 +1700,9 @@
         "texto": "Lo que sale en la página y en los documentos.",
         "telefono": "Teléfono público",
         "instagram": "Instagram (sin @)",
+        "facebook": "Facebook (enlace)",
+        "tiktok": "TikTok (enlace)",
+        "redesAyuda": "Opcional. Pega el enlace completo del perfil; los que estén llenos salen con su logo en el pie de la página.",
         "mapa": "Enlace de Google Maps",
         "mapaAyuda": "Opcional. Si lo dejas vacío, se arma con la dirección de la clínica.",
         "cupos": "Clientas a la vez",
@@ -1744,9 +1714,7 @@
         "fotoEsencia": "Foto de «Nuestra esencia»",
         "subirFoto": "Subir foto",
         "cambiarFoto": "Cambiar foto",
-        "fotoAyuda": "Una foto del equipo o de la clínica (propia, no de internet).",
-        "avisoDemo": "Mostrar la franja de «vista previa» en la página",
-        "avisoDemoAyuda": "Apágala cuando los precios, fotos y datos de contacto sean los reales."
+        "fotoAyuda": "Una foto del equipo o de la clínica (propia, no de internet)."
       },
       "horario": {
         "titulo": "Horario de atención",
@@ -1861,7 +1829,6 @@
       "opcional": "opcional",
       "mensaje": "¿Algo que debamos saber?",
       "mensajeEjemplo": "Alergias, si es tu primera vez, si vienes con alguien…",
-      "promo": "Vengo por la promoción de bienvenida (15 %).",
       "acepto": "Acepto la <enlace>política de privacidad</enlace> y que me contacten por mensaje sobre mi cita.",
       "reservar": "Reservar",
       "error": "No pudimos reservar. Intenta de nuevo o llámanos.",

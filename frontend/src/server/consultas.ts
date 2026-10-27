@@ -22,9 +22,10 @@ export interface DatosClinica {
   telefono: string;
   telefonoEnlace: string;
   instagram: string;
+  facebook: string | null;
+  tiktok: string | null;
   mapaUrl: string;
   mapaEmbed: string | null;
-  avisoDemo: boolean;
   fotoEsencia: string | null;
   horario: Array<{ dia: number; abre: string; cierra: string } | { dia: number; cerrado: true }>;
 }
@@ -34,8 +35,9 @@ export async function datosClinica(): Promise<DatosClinica> {
   let ajustes = {
     telefono: '(214) 555-0100',
     instagram: 'ngsmedspa',
+    facebook: '',
+    tiktok: '',
     mapaUrl: '',
-    avisoDemo: '1',
     fotoEsencia: '',
   };
   let horario: DatosClinica['horario'] = HORARIO_POR_DEFECTO.map((h, dia) =>
@@ -44,7 +46,7 @@ export async function datosClinica(): Promise<DatosClinica> {
 
   try {
     const [leidos, horas] = await Promise.all([
-      leerAjustes(['telefono', 'instagram', 'mapaUrl', 'avisoDemo', 'fotoEsencia'] as const),
+      leerAjustes(['telefono', 'instagram', 'facebook', 'tiktok', 'mapaUrl', 'fotoEsencia'] as const),
       prisma.businessHour.findMany(),
     ]);
     ajustes = leidos;
@@ -65,10 +67,11 @@ export async function datosClinica(): Promise<DatosClinica> {
     telefono: ajustes.telefono,
     telefonoEnlace: `tel:+1${ajustes.telefono.replace(/\D/g, '').slice(-10)}`,
     instagram: ajustes.instagram.replace(/^@/, ''),
+    facebook: ajustes.facebook || null,
+    tiktok: ajustes.tiktok || null,
     mapaUrl: ajustes.mapaUrl || `https://www.google.com/maps/search/?api=1&query=${busqueda}`,
     // El mapa solo se incrusta con una dirección real; si no, queda la imagen de prueba.
     mapaEmbed: direccion ? `https://www.google.com/maps?q=${busqueda}&output=embed` : null,
-    avisoDemo: ajustes.avisoDemo === '1',
     fotoEsencia: ajustes.fotoEsencia || null,
     horario,
   };

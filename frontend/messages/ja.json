@@ -247,6 +247,8 @@
     "finDespues": "終了は開始より後にしてください",
     "telefono": "電話番号が正しくないようです",
     "instagram": "英字・数字・ピリオド・アンダースコアのみ",
+    "facebook": "Facebookのリンクをすべて貼り付けてください（https://www.facebook.com/…）",
+    "tiktok": "TikTokのリンクをすべて貼り付けてください（https://www.tiktok.com/@…）",
     "mapa": "Googleマップのリンクを貼り付けてください",
     "cupos": "1〜10の範囲",
     "impuesto": "税率をベーシスポイントで入力してください（825 = 8.25%）"
@@ -627,10 +629,6 @@
     "paginaDe": "{total}件中 {desde}–{hasta}件"
   },
   "sitio": {
-    "demo": {
-      "titulo": "プレビュー",
-      "texto": "料金・画像・連絡先はサンプルです"
-    },
     "marca": {
       "lema": "Advanced Aesthetics"
     },
@@ -638,7 +636,6 @@
       "inicio": "ホーム",
       "tratamientos": "施術メニュー",
       "nosotros": "私たちについて",
-      "club": "VIPクラブ",
       "preguntas": "よくある質問",
       "contacto": "お問い合わせ",
       "reservar": "オンライン予約",
@@ -707,8 +704,7 @@
         "items": [
           "ブライダルプラン",
           "母娘デー",
-          "バースデーパッケージ",
-          "ギフトカード"
+          "バースデーパッケージ"
         ]
       },
       "signature": {
@@ -802,27 +798,6 @@
       "fotoPrueba": "サンプル画像",
       "fotoDetalle": "スタッフまたはクリニックの写真"
     },
-    "club": {
-      "pastilla": "限定メンバーシップ",
-      "titulo1": "ワンランク上の体験を",
-      "titulo2": "VIPクラブ",
-      "texto": "カード以上の価値を。優先予約、特別価格、リタッチのお知らせで、セルフケアを習慣にする方をサポートします。",
-      "b1": {
-        "titulo": "メンバー価格",
-        "texto": "施術・製品が最大20%オフ。"
-      },
-      "b2": {
-        "titulo": "VIP優先",
-        "texto": "優先予約と限定イベント。"
-      },
-      "b3": {
-        "titulo": "リタッチのお知らせ",
-        "texto": "次の施術のタイミングをお知らせします。"
-      },
-      "tarjetaMiembro": "MEMBER",
-      "tarjetaNombre": "YOUR NAME",
-      "tarjetaNivel": "LEVEL"
-    },
     "faq": {
       "kicker": "ご質問にお答えします",
       "titulo": "よくある質問",
@@ -883,16 +858,7 @@
       "consentimientos": "同意書",
       "reservas": "予約",
       "derechos": "© NGS MedSpa · DFW",
-      "hecho": "Solventraによるプレビュー",
       "panel": "スタッフログイン"
-    },
-    "promo": {
-      "kicker": "ウェルカムギフト",
-      "titulo": "初回15%オフ",
-      "texto": "プレビュー用のサンプルキャンペーンです。",
-      "boton": "利用する",
-      "abrir": "キャンペーンを見る",
-      "subir": "トップへ"
     },
     "dias": {
       "0": "日曜日",
@@ -902,7 +868,8 @@
       "4": "木曜日",
       "5": "金曜日",
       "6": "土曜日"
-    }
+    },
+    "subir": "トップへ"
   },
   "panel": {
     "shell": {
@@ -1733,6 +1700,9 @@
         "texto": "ウェブサイトと書類に表示される内容です。",
         "telefono": "公開用の電話番号",
         "instagram": "Instagram（@なし）",
+        "facebook": "Facebook（リンク）",
+        "tiktok": "TikTok（リンク）",
+        "redesAyuda": "任意。プロフィールのリンクをすべて貼り付けてください。入力したものはサイトのフッターにロゴ付きで表示されます。",
         "mapa": "Googleマップのリンク",
         "mapaAyuda": "任意。空欄の場合はクリニックの住所から作成します。",
         "cupos": "同時に対応できるお客様の数",
@@ -1744,9 +1714,7 @@
         "fotoEsencia": "「私たちの想い」の写真",
         "subirFoto": "写真をアップロード",
         "cambiarFoto": "写真を変更",
-        "fotoAyuda": "スタッフやクリニックの写真（ネット上のものではなく自前のもの）。",
-        "avisoDemo": "サイトに「プレビュー」の帯を表示する",
-        "avisoDemoAyuda": "料金、写真、連絡先が本番の内容になったらオフにしてください。"
+        "fotoAyuda": "スタッフやクリニックの写真（ネット上のものではなく自前のもの）。"
       },
       "horario": {
         "titulo": "営業時間",
@@ -1861,7 +1829,6 @@
       "opcional": "任意",
       "mensaje": "事前にお知らせいただきたいことはありますか？",
       "mensajeEjemplo": "アレルギー、初めてのご来院かどうか、同伴者の有無など…",
-      "promo": "ウェルカム特典（15%）を利用します。",
       "acepto": "<enlace>プライバシーポリシー</enlace>に同意し、予約に関するメッセージでの連絡を受け取ります。",
       "reservar": "予約する",
       "error": "予約できませんでした。もう一度お試しいただくか、お電話ください。",

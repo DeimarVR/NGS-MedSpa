@@ -18,7 +18,7 @@ export async function MarcoPublico({ children }: { children: ReactNode }) {
       </div>
       <main className="min-h-[60vh] bg-cream">{children}</main>
       <div className="ngs">
-        <PieSitio instagram={clinica.instagram} enLanding={false} />
+        <PieSitio clinica={clinica} enLanding={false} />
       </div>
     </>
   );

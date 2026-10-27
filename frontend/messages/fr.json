@@ -247,6 +247,8 @@
     "finDespues": "La fin doit être après le début",
     "telefono": "Le numéro ne semble pas valide",
     "instagram": "Lettres, chiffres, points et tirets bas uniquement",
+    "facebook": "Collez le lien Facebook complet (https://www.facebook.com/…)",
+    "tiktok": "Collez le lien TikTok complet (https://www.tiktok.com/@…)",
     "mapa": "Collez un lien Google Maps",
     "cupos": "Entre 1 et 10",
     "impuesto": "Indiquez le taux en points de base (825 = 8,25 %)"
@@ -627,10 +629,6 @@
     "paginaDe": "{desde}–{hasta} sur {total}"
   },
   "sitio": {
-    "demo": {
-      "titulo": "APERÇU",
-      "texto": "prix, images et coordonnées donnés à titre d’exemple"
-    },
     "marca": {
       "lema": "Advanced Aesthetics"
     },
@@ -638,7 +636,6 @@
       "inicio": "Accueil",
       "tratamientos": "Soins",
       "nosotros": "À propos",
-      "club": "Club VIP",
       "preguntas": "FAQ",
       "contacto": "Contact",
       "reservar": "Réserver en ligne",
@@ -707,8 +704,7 @@
         "items": [
           "Programme future mariée",
           "Journée mère et fille",
-          "Forfaits anniversaire",
-          "Cartes cadeaux"
+          "Forfaits anniversaire"
         ]
       },
       "signature": {
@@ -802,27 +798,6 @@
       "fotoPrueba": "Image d’exemple",
       "fotoDetalle": "Photo de l’équipe ou de la clinique"
     },
-    "club": {
-      "pastilla": "Adhésion exclusive",
-      "titulo1": "Sublimez votre expérience",
-      "titulo2": "Club VIP",
-      "texto": "Plus qu’une carte : priorité, économies et rappels de retouche pour celles qui font du soin de soi un art de vivre.",
-      "b1": {
-        "titulo": "Tarifs membres",
-        "texto": "Jusqu’à 20 % sur les soins et les produits."
-      },
-      "b2": {
-        "titulo": "Priorité VIP",
-        "texto": "Réservation prioritaire et événements exclusifs."
-      },
-      "b3": {
-        "titulo": "Rappels de retouche",
-        "texto": "Nous vous prévenons quand c’est le moment."
-      },
-      "tarjetaMiembro": "MEMBRE",
-      "tarjetaNombre": "VOTRE NOM ICI",
-      "tarjetaNivel": "NIVEAU"
-    },
     "faq": {
       "kicker": "Nous répondons à vos questions",
       "titulo": "Questions fréquentes",
@@ -883,16 +858,7 @@
       "consentimientos": "Consentements",
       "reservas": "Réserver",
       "derechos": "© NGS MedSpa · DFW",
-      "hecho": "Aperçu réalisé par Solventra",
       "panel": "Accès équipe"
-    },
-    "promo": {
-      "kicker": "Cadeau de bienvenue",
-      "titulo": "−15 % sur votre première visite",
-      "texto": "Promotion d’exemple pour l’aperçu.",
-      "boton": "J’en profite",
-      "abrir": "Voir la promotion",
-      "subir": "Haut de page"
     },
     "dias": {
       "0": "Dimanche",
@@ -902,7 +868,8 @@
       "4": "Jeudi",
       "5": "Vendredi",
       "6": "Samedi"
-    }
+    },
+    "subir": "Haut de page"
   },
   "panel": {
     "shell": {
@@ -1733,6 +1700,9 @@
         "texto": "Ce qui apparaît sur le site et sur les documents.",
         "telefono": "Téléphone public",
         "instagram": "Instagram (sans @)",
+        "facebook": "Facebook (lien)",
+        "tiktok": "TikTok (lien)",
+        "redesAyuda": "Facultatif. Collez le lien complet du profil ; ceux qui sont remplis apparaissent avec leur logo dans le pied de page du site.",
         "mapa": "Lien Google Maps",
         "mapaAyuda": "Facultatif. S'il est vide, il est construit à partir de l'adresse de la clinique.",
         "cupos": "Clientes en même temps",
@@ -1744,9 +1714,7 @@
         "fotoEsencia": "Photo « Notre essence »",
         "subirFoto": "Importer une photo",
         "cambiarFoto": "Changer la photo",
-        "fotoAyuda": "Une photo de l'équipe ou de la clinique (la vôtre, pas d'internet).",
-        "avisoDemo": "Afficher le bandeau « aperçu » sur le site",
-        "avisoDemoAyuda": "Désactivez-le quand les prix, les photos et les coordonnées seront les vrais."
+        "fotoAyuda": "Une photo de l'équipe ou de la clinique (la vôtre, pas d'internet)."
       },
       "horario": {
         "titulo": "Horaires d'ouverture",
@@ -1861,7 +1829,6 @@
       "opcional": "facultatif",
       "mensaje": "Quelque chose que nous devrions savoir ?",
       "mensajeEjemplo": "Allergies, si c'est votre première fois, si vous venez accompagnée…",
-      "promo": "Je viens pour l'offre de bienvenue (15 %).",
       "acepto": "J'accepte la <enlace>politique de confidentialité</enlace> et d'être contactée par message au sujet de mon rendez-vous.",
       "reservar": "Réserver",
       "error": "La réservation n'a pas abouti. Réessayez ou appelez-nous.",

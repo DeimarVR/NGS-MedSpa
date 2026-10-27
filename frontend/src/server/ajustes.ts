@@ -15,8 +15,10 @@ export const AJUSTES = {
   instagram: { clave: 'clinica.instagram', defecto: 'ngsmedspa' },
   /** Enlace de Google Maps. Vacío: se arma con la dirección. */
   mapaUrl: { clave: 'clinica.mapaUrl', defecto: '' },
-  /** Franja de «vista previa · datos de ejemplo» arriba de la landing. */
-  avisoDemo: { clave: 'sitio.avisoDemo', defecto: '1' },
+  /** Página de Facebook (enlace completo). Vacío: no sale en el pie. */
+  facebook: { clave: 'clinica.facebook', defecto: '' },
+  /** Perfil de TikTok (enlace completo). Vacío: no sale en el pie. */
+  tiktok: { clave: 'clinica.tiktok', defecto: '' },
   /** Foto del equipo o la clínica en «Nuestra esencia» (ruta /api/archivos/sitio/...). */
   fotoEsencia: { clave: 'sitio.fotoEsencia', defecto: '' },
   /** Cuántas clientas se atienden a la vez (una inyectora: 1). */

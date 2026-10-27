@@ -3,13 +3,14 @@ import { defineRouting } from 'next-intl/routing';
 /**
  * Los cinco idiomas del sitio y del panel.
  *
- * La ruta siempre lleva el idioma delante (/es, /en…). Si alguien entra a la
- * raíz, el proxy elige según el navegador y, si no sabe, manda a inglés: la
- * clínica está en Dallas.
+ * La ruta siempre lleva el idioma delante (/en, /es…). Quien entra a la raíz
+ * va SIEMPRE a inglés (no se adivina por el navegador): la clínica está en
+ * Dallas. Si la persona eligió otro idioma, se recuerda en la cookie.
  */
 export const routing = defineRouting({
-  locales: ['es', 'en', 'fr', 'ar', 'ja'],
+  locales: ['en', 'es', 'fr', 'ar', 'ja'],
   defaultLocale: 'en',
+  localeDetection: false,
   localePrefix: 'always',
   localeCookie: { name: 'NGS_IDIOMA', maxAge: 60 * 60 * 24 * 365 },
 });

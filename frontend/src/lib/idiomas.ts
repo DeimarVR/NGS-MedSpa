@@ -5,8 +5,8 @@ export const IDIOMAS: Record<
   Locale,
   { nombre: string; corto: string; dir: 'ltr' | 'rtl'; intl: string; enum: 'ES' | 'EN' | 'FR' | 'AR' | 'JA' }
 > = {
-  es: { nombre: 'Español', corto: 'ES', dir: 'ltr', intl: 'es-US', enum: 'ES' },
   en: { nombre: 'English', corto: 'EN', dir: 'ltr', intl: 'en-US', enum: 'EN' },
+  es: { nombre: 'Español', corto: 'ES', dir: 'ltr', intl: 'es-US', enum: 'ES' },
   fr: { nombre: 'Français', corto: 'FR', dir: 'ltr', intl: 'fr-CA', enum: 'FR' },
   // Cifras occidentales: los precios y teléfonos de EE. UU. se leen así.
   ar: { nombre: 'العربية', corto: 'AR', dir: 'rtl', intl: 'ar-u-nu-latn', enum: 'AR' },

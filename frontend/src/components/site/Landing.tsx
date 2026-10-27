@@ -7,26 +7,23 @@ import { CabeceraSitio } from './CabeceraSitio';
 import { Flotantes } from './Flotantes';
 import { FormularioContacto } from './FormularioContacto';
 import { GuiaTratamiento } from './GuiaTratamiento';
-import { Icono, type NombreIcono } from './iconos';
+import { Icono } from './iconos';
 import { PieSitio } from './PieSitio';
 import { VideoPortada } from './VideoPortada';
 import './landing.css';
 
-/** Las seis tarjetas de tratamientos de basico.html, con sus colores. */
+/** Las seis tarjetas de tratamientos de basico.html. */
 const TARJETAS: Array<{
   id: 'toxina' | 'rellenos' | 'perfilado' | 'piel' | 'planes' | 'signature';
-  icono: NombreIcono;
-  fondo: string;
-  color: string;
   conPrecio?: boolean;
   oscura?: boolean;
 }> = [
-  { id: 'toxina', icono: 'jeringa', fondo: '#F6EDE7', color: '#9C6B53', conPrecio: true },
-  { id: 'rellenos', icono: 'labios', fondo: '#FBEAEA', color: '#B4535E', conPrecio: true },
-  { id: 'perfilado', icono: 'destello', fondo: '#EEF1F8', color: '#3E5A8C', conPrecio: true },
-  { id: 'piel', icono: 'hoja', fondo: '#EAF5EF', color: '#3E7B5B' },
-  { id: 'planes', icono: 'regalo', fondo: '#FCEFF6', color: '#B0517F' },
-  { id: 'signature', icono: 'estrella', fondo: 'var(--grad)', color: '#fff', oscura: true },
+  { id: 'toxina', conPrecio: true },
+  { id: 'rellenos', conPrecio: true },
+  { id: 'perfilado', conPrecio: true },
+  { id: 'piel' },
+  { id: 'planes' },
+  { id: 'signature', oscura: true },
 ];
 
 export async function Landing({ clinica }: { clinica: DatosClinica }) {
@@ -38,12 +35,6 @@ export async function Landing({ clinica }: { clinica: DatosClinica }) {
 
   return (
     <div className="ngs">
-      {clinica.avisoDemo && (
-        <div className="demo">
-          <b>{t('demo.titulo')}</b> · <span>{t('demo.texto')}</span>
-        </div>
-      )}
-
       <CabeceraSitio />
 
       <main>
@@ -99,9 +90,6 @@ export async function Landing({ clinica }: { clinica: DatosClinica }) {
                   <div key={tarjeta.id} className={`card${tarjeta.oscura ? ' dark' : ''}`}>
                     {tarjeta.oscura && <span className="new">{t('servicios.nuevo')}</span>}
                     <span className="num">{String(i + 1).padStart(2, '0')}</span>
-                    <div className="icon" style={{ background: tarjeta.fondo, color: tarjeta.color }}>
-                      <Icono nombre={tarjeta.icono} tamano={30} />
-                    </div>
                     <h3>{t(`servicios.${tarjeta.id}.titulo`)}</h3>
                     <ul>
                       {tarjeta.conPrecio && (
@@ -172,63 +160,7 @@ export async function Landing({ clinica }: { clinica: DatosClinica }) {
           </div>
         </section>
 
-        {/* 6. Club VIP */}
-        <section className="s club" id="club">
-          <div className="wrap grid">
-            <div>
-              <span className="pill-gold">{t('club.pastilla')}</span>
-              <h2>
-                {t('club.titulo1')}
-                <br />
-                <span>{t('club.titulo2')}</span>
-              </h2>
-              <p>{t('club.texto')}</p>
-              {(
-                [
-                  ['b1', 'etiqueta'],
-                  ['b2', 'estrella'],
-                  ['b3', 'ciclo'],
-                ] as const
-              ).map(([clave, icono]) => (
-                <div className="ben" key={clave}>
-                  <i>
-                    <Icono nombre={icono} tamano={24} />
-                  </i>
-                  <div>
-                    <b>{t(`club.${clave}.titulo`)}</b>
-                    <span>{t(`club.${clave}.texto`)}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="vip" aria-hidden="true">
-              <div className="top-row">
-                <div>
-                  <small>NGS MEDSPA</small>
-                  <div className="serif" style={{ color: '#fff', fontSize: 28 }}>
-                    {t('club.titulo2')}
-                  </div>
-                </div>
-                <span style={{ color: 'var(--gold)' }}>
-                  <Icono nombre="corona" tamano={32} />
-                </span>
-              </div>
-              <div className="chip" />
-              <div className="row">
-                <div>
-                  <span>{t('club.tarjetaMiembro')}</span>
-                  <b>{t('club.tarjetaNombre')}</b>
-                </div>
-                <div className="fin">
-                  <span>{t('club.tarjetaNivel')}</span>
-                  <b style={{ color: 'var(--gold)' }}>VIP</b>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 7. Preguntas frecuentes */}
+        {/* 6. Preguntas frecuentes */}
         <section className="s" id="faq">
           <div className="wrap">
             <div style={{ textAlign: 'center' }}>
@@ -246,7 +178,7 @@ export async function Landing({ clinica }: { clinica: DatosClinica }) {
           </div>
         </section>
 
-        {/* 8. Visítanos */}
+        {/* 7. Visítanos */}
         <section id="contacto">
           <div className="wrap">
             <div style={{ textAlign: 'center', marginBottom: 46 }}>
@@ -342,7 +274,7 @@ export async function Landing({ clinica }: { clinica: DatosClinica }) {
         </section>
       </main>
 
-      <PieSitio instagram={clinica.instagram} />
+      <PieSitio clinica={clinica} />
       <Flotantes />
     </div>
   );

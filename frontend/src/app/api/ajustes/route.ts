@@ -32,7 +32,16 @@ const ajustesSchema = z
       .trim()
       .max(500)
       .refine((v) => v === '' || /^https:\/\/(www\.)?(google\.[a-z.]+\/maps|maps\.app\.goo\.gl|goo\.gl\/maps)/i.test(v), 'v.mapa'),
-    avisoDemo: z.enum(['0', '1']),
+    facebook: z
+      .string()
+      .trim()
+      .max(200)
+      .refine((v) => v === '' || /^https:\/\/(www\.|m\.|web\.)?(facebook\.com|fb\.com)\/\S+$/i.test(v), 'v.facebook'),
+    tiktok: z
+      .string()
+      .trim()
+      .max(200)
+      .refine((v) => v === '' || /^https:\/\/(www\.)?tiktok\.com\/@\S+$/i.test(v), 'v.tiktok'),
     fotoEsencia: rutaDeSitio,
     cupos: z.string().regex(/^([1-9]|10)$/, 'v.cupos'),
     impuestoBps: z.string().regex(/^\d{1,4}$/, 'v.impuesto'),

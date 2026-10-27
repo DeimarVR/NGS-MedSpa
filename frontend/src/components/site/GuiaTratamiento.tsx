@@ -3,17 +3,16 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import { Icono, type NombreIcono } from './iconos';
 
 /**
  * La guía «Encuentra tu tratamiento ideal», de 2 pasos (basico.html).
  * Cada recomendación lleva a la reserva con el tratamiento ya elegido.
  */
-const AREAS: Array<{ id: 'rostro' | 'labios' | 'perfil' | 'piel'; icono: NombreIcono; metas: Record<'a' | 'b', string> }> = [
-  { id: 'rostro', icono: 'cara', metas: { a: 'toxina-botulinica', b: 'relleno-ojeras' } },
-  { id: 'labios', icono: 'labios', metas: { a: 'relleno-labios', b: 'lip-flip' } },
-  { id: 'perfil', icono: 'destello', metas: { a: 'rinomodelacion', b: 'menton-mandibula' } },
-  { id: 'piel', icono: 'hoja', metas: { a: 'skin-boosters', b: 'peeling-quimico' } },
+const AREAS: Array<{ id: 'rostro' | 'labios' | 'perfil' | 'piel'; metas: Record<'a' | 'b', string> }> = [
+  { id: 'rostro', metas: { a: 'toxina-botulinica', b: 'relleno-ojeras' } },
+  { id: 'labios', metas: { a: 'relleno-labios', b: 'lip-flip' } },
+  { id: 'perfil', metas: { a: 'rinomodelacion', b: 'menton-mandibula' } },
+  { id: 'piel', metas: { a: 'skin-boosters', b: 'peeling-quimico' } },
 ];
 
 export function GuiaTratamiento() {
@@ -55,9 +54,6 @@ export function GuiaTratamiento() {
         <div className="opts">
           {(['a', 'b'] as const).map((m) => (
             <button key={m} type="button" className="opt" onClick={() => setMeta(m)}>
-              <i>
-                <Icono nombre={area.icono} tamano={26} />
-              </i>
               {t(`areas.${area.id}.${m}.meta`)}
             </button>
           ))}
@@ -76,9 +72,6 @@ export function GuiaTratamiento() {
       <div className="opts">
         {AREAS.map((a) => (
           <button key={a.id} type="button" className="opt" onClick={() => setArea(a)}>
-            <i>
-              <Icono nombre={a.icono} tamano={26} />
-            </i>
             {t(`areas.${a.id}.nombre`)}
           </button>
         ))}

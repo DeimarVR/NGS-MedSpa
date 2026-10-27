@@ -9,7 +9,7 @@ import { SubidaImagen } from '@/components/admin/SubidaImagen';
 import { CajaError, CajaOk, Cargando, Encabezado } from '@/components/admin/ui';
 import { mensajeDe, useCarga } from '@/components/admin/useCarga';
 
-type Ajustes = { telefono: string; instagram: string; mapaUrl: string; avisoDemo: string; fotoEsencia: string; cupos: string; impuestoBps: string; notaRecibo: string };
+type Ajustes = { telefono: string; instagram: string; facebook: string; tiktok: string; mapaUrl: string; fotoEsencia: string; cupos: string; impuestoBps: string; notaRecibo: string };
 interface Dia {
   dayOfWeek: number;
   active: boolean;
@@ -131,6 +131,15 @@ function ClinicaForm({ inicial }: { inicial: Ajustes }) {
           <span className="field-label">{t('instagram')}</span>
           <input className="field" dir="ltr" value={a.instagram} onChange={(e) => poner('instagram', e.target.value)} />
         </label>
+        <label className="block">
+          <span className="field-label">{t('facebook')}</span>
+          <input className="field" dir="ltr" value={a.facebook} onChange={(e) => poner('facebook', e.target.value)} placeholder="https://www.facebook.com/…" />
+        </label>
+        <label className="block">
+          <span className="field-label">{t('tiktok')}</span>
+          <input className="field" dir="ltr" value={a.tiktok} onChange={(e) => poner('tiktok', e.target.value)} placeholder="https://www.tiktok.com/@…" />
+        </label>
+        <p className="-mt-2 text-xs text-muted sm:col-span-2">{t('redesAyuda')}</p>
         <label className="block sm:col-span-2">
           <span className="field-label">{t('mapa')}</span>
           <input className="field" dir="ltr" value={a.mapaUrl} onChange={(e) => poner('mapaUrl', e.target.value)} placeholder="https://maps.app.goo.gl/…" />
@@ -175,13 +184,6 @@ function ClinicaForm({ inicial }: { inicial: Ajustes }) {
           </div>
           <span className="mt-1 block text-xs text-muted">{t('fotoAyuda')}</span>
         </div>
-        <label className="flex items-start gap-3 rounded-2xl border border-line p-3 text-sm sm:col-span-2">
-          <input type="checkbox" checked={a.avisoDemo === '1'} onChange={(e) => poner('avisoDemo', e.target.checked ? '1' : '0')} className="mt-0.5 h-4 w-4 accent-brand-700" />
-          <span>
-            <b>{t('avisoDemo')}</b>
-            <span className="block text-muted">{t('avisoDemoAyuda')}</span>
-          </span>
-        </label>
       </div>
       {ok && <CajaOk mensaje={ok} />}
       {error && <CajaError mensaje={error} />}

@@ -52,7 +52,7 @@ export function Reserva({ telefono, telefonoEnlace }: { telefono: string; telefo
   const [nombre, setNombre] = useState('');
   const [tel, setTel] = useState('');
   const [correo, setCorreo] = useState('');
-  const [mensaje, setMensaje] = useState(params.get('promo') ? t('promo') : '');
+  const [mensaje, setMensaje] = useState('');
   const [acepta, setAcepta] = useState(false);
   const [trampa, setTrampa] = useState('');
   const [enviando, setEnviando] = useState(false);

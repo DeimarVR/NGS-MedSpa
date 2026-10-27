@@ -121,7 +121,7 @@ export async function calcularRetoques(opciones: { patientId?: string; locale?: 
     .filter((c) => clientaPorId.has(c.patientId))
     .map((c) => {
       const clienta = clientaPorId.get(c.patientId)!;
-      const servicio = traducirServicio(porId.get(c.serviceId)!, opciones.locale ?? 'es');
+      const servicio = traducirServicio(porId.get(c.serviceId)!, opciones.locale ?? 'en');
       const suIdioma = localeDeEnum(clienta.preferredLocale);
       return {
         clave: `${c.patientId}|${c.serviceId}|${c.ultimaVez.toISOString().slice(0, 10)}`,

@@ -93,11 +93,10 @@ export function CabeceraSitio({ enLanding = true }: { enLanding?: boolean }) {
     };
   }, [abierto]);
 
-  const enlaces: Array<{ id: string; texto: string; club?: boolean }> = [
+  const enlaces: Array<{ id: string; texto: string }> = [
     { id: 'inicio', texto: t('inicio') },
     { id: 'servicios', texto: t('tratamientos') },
     { id: 'esencia', texto: t('nosotros') },
-    { id: 'club', texto: t('club'), club: true },
     { id: 'faq', texto: t('preguntas') },
     { id: 'contacto', texto: t('contacto') },
   ];
@@ -108,18 +107,11 @@ export function CabeceraSitio({ enLanding = true }: { enLanding?: boolean }) {
         <div className="wrap">
           <LogoNgs href={enLanding ? '#inicio' : '/'} />
           <nav>
-            {enlaces.map((e) =>
-              e.club ? (
-                <a key={e.id} href={a(e.id)} className="clubl">
-                  <Icono nombre="corona" tamano={18} />
-                  <span>{e.texto}</span>
-                </a>
-              ) : (
-                <a key={e.id} href={a(e.id)}>
-                  {e.texto}
-                </a>
-              ),
-            )}
+            {enlaces.map((e) => (
+              <a key={e.id} href={a(e.id)}>
+                {e.texto}
+              </a>
+            ))}
           </nav>
           <SelectorIdioma />
           <Link className="btn btn-grad hdr-cta" href="/reservar">

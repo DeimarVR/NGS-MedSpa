@@ -9,7 +9,7 @@
 
      navy        #0F1A2E  → brand-900  (fondo oscuro, texto de marca)
      oro rosa    #9C6B53 → #D8A988     (degradado de los botones principales)
-     dorado VIP  #E3B54B  → leaf-400   (Club VIP, solo relleno)
+     dorado      #E3B54B  → leaf-400   (detalles dorados)
 
    Los nombres `brand`, `accent` y `leaf` se conservan del panel de
    Dermocapilar para que sus pantallas se pudieran traer sin reescribir clases.
